@@ -23,11 +23,29 @@ import {
   Text,
   Box,
 } from '@chakra-ui/react';
+import useFetchData from '../hooks/useFetchData';
 
 function CurrencyCalculator() {
-  const [input, setInput] = useState('');
-  const handleInputChange = e => setInput(e.target.value);
-  const isErrorAmountInput = input === '3';
+  const [inputUser, setInputUser] = useState({
+    amount: "",
+    baseCurrency: "USD",
+    futureCurrency: "AUD"
+  })
+  //const isErrorAmountInput = input === '3';
+
+  function handleInputChange(e) {
+    const {name, value} = e.target
+      setInputUser(prevInputUser => {
+        return {
+          ...prevInputUser,
+          [name]: value
+        }
+      })
+  }
+
+  function fetchData(){
+    useFetchData(inputUser)
+  }
 
   return (
     <Stack
@@ -50,22 +68,19 @@ function CurrencyCalculator() {
         spacing={10}
       >
         <VStack minH="110px">
-          <FormControl isInvalid={isErrorAmountInput}>
+          <FormControl>
             <FormLabel textAlign="center">Amount:</FormLabel>
             <InputGroup>
               <InputLeftAddon children="$" minH="50px" />
               <Input
                 type="text"
-                onChange={handleInputChange}
-                value={input}
+                onChange={(e) => handleInputChange(e)}
+                value={inputUser.amount}
                 minH="50px"
+                name='amount'
               />
             </InputGroup>
-            {!isErrorAmountInput ? (
-              <FormHelperText>Enter an amount greater than 0.</FormHelperText>
-            ) : (
-              <FormErrorMessage>Enter a valid number.</FormErrorMessage>
-            )}
+           
           </FormControl>
         </VStack>
 
@@ -80,7 +95,7 @@ function CurrencyCalculator() {
             minW="290px"
           >
             <Image src={flagUSD} boxSize="20px" />
-            <Select variant="unstyled">
+            <Select variant="unstyled" name='baseCurrency' onChange={(e) => handleInputChange(e)}>
               <option value="USD">USD - US Dollar</option>
               <option value="AUD">AUD - Australian Dollar</option>
               <option value="CAD">CAD - Canadian Dollar</option>
@@ -111,8 +126,8 @@ function CurrencyCalculator() {
             borderColor="gray.200"
             minW="290px"
           >
-            <Image src={flagAUD} boxSize="20px" />
-            <Select variant="unstyled">
+            <Image src={flagAUD} boxSize="20px"/>
+            <Select variant="unstyled" name='futureCurrency' onChange={(e) => handleInputChange(e)}>
               <option value="AUD">AUD - Australian Dollar</option>
               <option value="USD">USD - US Dollar</option>
               <option value="CAD">CAD - Canadian Dollar</option>
@@ -124,7 +139,7 @@ function CurrencyCalculator() {
       </Stack>
 
       <Stack align="center" justify="center">
-        <Button maxW={48}>Convert Now!</Button>
+        <Button maxW={48} onClick={() => fetchData()}>Convert Now!</Button>
       </Stack>
     </Stack>
   );
