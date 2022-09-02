@@ -5,7 +5,7 @@ import {
   Stack,
 } from '@chakra-ui/react';
 import Navbar from './components/Navbar';
-import CurrencyCalculator from './components/CurrencyCalculator';
+import CurrencyCalculator from './components/Currency-calculator';
 
 function App() {
   return (
