@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import flagUSD from '../assets/usd.svg';
 import flagAUD from '../assets/aud.svg';
 import flagCAD from '../assets/cad.svg';
@@ -22,55 +22,30 @@ import {
   Select,
   Text,
   Box,
-  Spinner,
 } from '@chakra-ui/react';
-import apiExchangeRate from '../api';
+import useFetchData from '../hooks/useFetchData';
 
 function CurrencyCalculator() {
   const [inputUser, setInputUser] = useState({
-    amount: '1',
-    baseCurrency: 'USD',
-    futureCurrency: 'AUD',
-  });
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const inputError = /[^0-9.]/g.test(inputUser.amount);
-  const [sendInputUser, setSendInputUser] = useState({
-    amount: '1',
-    baseCurrency: 'USD',
-    futureCurrency: 'AUD',
-  });
+    amount: "",
+    baseCurrency: "USD",
+    futureCurrency: "AUD"
+  })
+  //const isErrorAmountInput = input === '3';
 
   function handleInputChange(e) {
-    const { name, value } = e.target;
-    setInputUser(prevInputUser => {
-      return {
-        ...prevInputUser,
-        [name]: value,
-      };
-    });
+    const {name, value} = e.target
+      setInputUser(prevInputUser => {
+        return {
+          ...prevInputUser,
+          [name]: value
+        }
+      })
   }
 
-  const handleClickButton = async () => {
-    if (!inputError) {
-      setLoading(true);
-      setError(null);
-      setData(null);
-      try {
-        const resource = await apiExchangeRate.getExchange(
-          inputUser.baseCurrency,
-          inputUser.futureCurrency,
-          inputUser.amount
-        );
-        setData(resource);
-        setSendInputUser(inputUser)
-      } catch (error) {
-        setError('Something went wrong, try again later. Sorry.');
-      }
-      setLoading(false);
-    }
-  };
+  function fetchData(){
+    useFetchData(inputUser)
+  }
 
   return (
     <Stack
@@ -93,23 +68,19 @@ function CurrencyCalculator() {
         spacing={10}
       >
         <VStack minH="110px">
-          <FormControl isInvalid={inputError}>
+          <FormControl>
             <FormLabel textAlign="center">Amount:</FormLabel>
             <InputGroup>
               <InputLeftAddon children="$" minH="50px" />
               <Input
                 type="text"
-                onChange={e => handleInputChange(e)}
+                onChange={(e) => handleInputChange(e)}
                 value={inputUser.amount}
                 minH="50px"
-                name="amount"
+                name='amount'
               />
             </InputGroup>
-            {inputError && (
-              <FormErrorMessage>
-                Only numbers and . (Example: 32.10)
-              </FormErrorMessage>
-            )}
+           
           </FormControl>
         </VStack>
 
@@ -124,11 +95,7 @@ function CurrencyCalculator() {
             minW="290px"
           >
             <Image src={flagUSD} boxSize="20px" />
-            <Select
-              variant="unstyled"
-              name="baseCurrency"
-              onChange={e => handleInputChange(e)}
-            >
+            <Select variant="unstyled" name='baseCurrency' onChange={(e) => handleInputChange(e)}>
               <option value="USD">USD - US Dollar</option>
               <option value="AUD">AUD - Australian Dollar</option>
               <option value="CAD">CAD - Canadian Dollar</option>
@@ -159,12 +126,8 @@ function CurrencyCalculator() {
             borderColor="gray.200"
             minW="290px"
           >
-            <Image src={flagAUD} boxSize="20px" />
-            <Select
-              variant="unstyled"
-              name="futureCurrency"
-              onChange={e => handleInputChange(e)}
-            >
+            <Image src={flagAUD} boxSize="20px"/>
+            <Select variant="unstyled" name='futureCurrency' onChange={(e) => handleInputChange(e)}>
               <option value="AUD">AUD - Australian Dollar</option>
               <option value="USD">USD - US Dollar</option>
               <option value="CAD">CAD - Canadian Dollar</option>
@@ -176,21 +139,8 @@ function CurrencyCalculator() {
       </Stack>
 
       <Stack align="center" justify="center">
-        <Button maxW={48} onClick={() => handleClickButton()}>
-          Convert Now!
-        </Button>
+        <Button maxW={48} onClick={() => fetchData()}>Convert Now!</Button>
       </Stack>
-      {loading && (
-        <Spinner size="xl" color="red.500" thickness="4px" speed="0.7s" />
-      )}
-      {data && <Stack>
-        
-        <Text>{sendInputUser.amount} {sendInputUser.baseCurrency} =</Text>
-        <Text>{Object.values(data.rates)[0]} {sendInputUser.futureCurrency}</Text>
-        
-        
-        </Stack>}
-      {error && <Text>{error}</Text>}
     </Stack>
   );
 }
