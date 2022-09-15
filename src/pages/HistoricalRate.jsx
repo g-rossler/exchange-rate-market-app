@@ -1,41 +1,21 @@
 import { useState } from 'react';
-import swapImg from '../assets/swap.svg';
+import getDate from '../utils';
+import apiExchangeRate from '../api';
 import {
   HStack,
   Image,
   Button,
   Stack,
-  Input,
-  FormControl,
-  FormLabel,
-  InputLeftAddon,
-  InputGroup,
-  FormErrorMessage,
   VStack,
   Select,
   Text,
   Spinner,
 } from '@chakra-ui/react';
-import apiExchangeRate from '../api';
-import ResultTable from './ResultTable';
+import swapImg from '../assets/swap.svg';
+import dataJSON from '../data';
+import Chart from '../components/Chart';
 
-function CurrencyCalculator() {
-  const [inputUser, setInputUser] = useState({
-    amount: '1',
-    baseCurrency: 'USD',
-    futureCurrency: 'AUD',
-  });
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const inputError = /[^0-9.]/g.test(inputUser.amount);
-  const [sendInputUser, setSendInputUser] = useState({
-    amount: '1',
-    baseCurrency: 'USD',
-    futureCurrency: 'AUD',
-  });
-  const baseFlag = `flag${inputUser.baseCurrency}`;
-  const futureFlag = `flag${inputUser.futureCurrency}`;
+function HistoricalRate() {
   const flalgsURL = {
     flagUSD: './assets/usd.svg',
     flagAUD: './assets/aud.svg',
@@ -43,6 +23,16 @@ function CurrencyCalculator() {
     flagEUR: './assets/eur.svg',
     flagGBP: './assets/gbp.svg',
   };
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [inputUser, setInputUser] = useState({
+    amount: '1',
+    baseCurrency: 'USD',
+    futureCurrency: 'AUD',
+  });
+  const baseFlag = `flag${inputUser.baseCurrency}`;
+  const futureFlag = `flag${inputUser.futureCurrency}`;
 
   function handleInputChange(e) {
     const { name, value } = e.target;
@@ -55,23 +45,39 @@ function CurrencyCalculator() {
   }
 
   const handleClickButton = async () => {
-    if (!inputError) {
-      setLoading(true);
-      setError(null);
-      setData(null);
-      try {
-        const resource = await apiExchangeRate.getExchange(
-          inputUser.baseCurrency,
-          inputUser.futureCurrency,
-          inputUser.amount
-        );
-        setData(resource);
-        setSendInputUser(inputUser);
-      } catch (error) {
-        setError('Something went wrong, try again later. Sorry.');
+    const dates = getDate();
+
+    setLoading(true);
+    setError(null);
+    setData(null);
+    try {
+      /*
+      const resource = await apiExchangeRate.getHistoricalRate(
+        inputUser.baseCurrency,
+        inputUser.futureCurrency,
+        dates[0],
+        dates[1]
+      );
+      */
+      const resource = dataJSON;
+      const dateArray = Object.keys(resource.rates);
+      console.log(dateArray);
+
+      const prices = [];
+      for (let price of Object.values(resource.rates)) {
+        prices.push(price[inputUser.futureCurrency]);
       }
-      setLoading(false);
+      console.log(prices);
+      const datosCotizacion = dateArray.map((elem, i) => {
+        return { fecha: elem, Price: prices[i] };
+      });
+      console.log(datosCotizacion);
+
+      setData(datosCotizacion);
+    } catch (error) {
+      setError('Something went wrong, try again later. Sorry.');
     }
+    setLoading(false);
   };
 
   return (
@@ -95,27 +101,6 @@ function CurrencyCalculator() {
           w="max-content"
           spacing={10}
         >
-          <VStack minH="110px">
-            <FormControl isInvalid={inputError}>
-              <FormLabel textAlign="center">Amount:</FormLabel>
-              <InputGroup>
-                <InputLeftAddon children="$" minH="50px" />
-                <Input
-                  type="text"
-                  onChange={e => handleInputChange(e)}
-                  value={inputUser.amount}
-                  minH="50px"
-                  name="amount"
-                />
-              </InputGroup>
-              {inputError && (
-                <FormErrorMessage>
-                  Only numbers and . (Example: 32.10)
-                </FormErrorMessage>
-              )}
-            </FormControl>
-          </VStack>
-
           <VStack minH="110px">
             <Text>From:</Text>
             <HStack
@@ -186,30 +171,21 @@ function CurrencyCalculator() {
 
         <Stack align="center" justify="center">
           <Button maxW={48} onClick={() => handleClickButton()}>
-            Convert Now!
+            See historical rate
           </Button>
         </Stack>
         {loading && (
           <Spinner size="xl" color="red.500" thickness="4px" speed="0.7s" />
         )}
         {data && (
-          <Stack>
-            <Text>
-              {sendInputUser.amount} {sendInputUser.baseCurrency} ={' '}
-              {Object.values(data.rates)[0]} {sendInputUser.futureCurrency}
-            </Text>
+          <Stack m='auto' maxWidth='1000px' maxHeight='1000px' h='90vh' w='90vw'>
+            <Chart data={data} futureCurrency={inputUser.futureCurrency} />
           </Stack>
         )}
         {error && <Text>{error}</Text>}
       </Stack>
-      {data && (
-        <ResultTable
-          result={Object.values(data.rates)[0]}
-          userInput={sendInputUser}
-        />
-      )}
     </VStack>
   );
 }
 
-export default CurrencyCalculator;
+export default HistoricalRate;
