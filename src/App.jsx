@@ -1,18 +1,19 @@
 import React from 'react';
-import { ChakraProvider, theme, Stack } from '@chakra-ui/react';
+import { ChakraProvider, Stack } from '@chakra-ui/react';
 import Navbar from './components/Navbar';
-import CurrencyCalculator from './components/CurrencyCalculator';
-import HistoricCurrency from './components/HistoricCurrency';
-import { Routes, Route, Link } from 'react-router-dom';
+import CurrencyCalculator from './pages/CurrencyCalculator';
+import HistoricalRate from './pages/HistoricalRate';
+import { Routes, Route } from 'react-router-dom';
+import theme from './theme';
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
-      <Stack p={2} align="center" justify="center">
+      <Stack>
         <Navbar />
         <Routes>
           <Route path="/" element={<CurrencyCalculator />} />
-          <Route path="/historic" element={<HistoricCurrency />} />
+          <Route path="/historical" element={<HistoricalRate />} />
         </Routes>
       </Stack>
     </ChakraProvider>
