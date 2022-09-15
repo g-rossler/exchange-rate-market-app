@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.exchangerate.host/latest';
+const BASE_URL = 'https://api.exchangerate.host';
 
 const getResource = async resourceUrl => {
   const response = await fetch(resourceUrl);
@@ -10,9 +10,13 @@ const getResource = async resourceUrl => {
 };
 
 const apiExchangeRate = {
-  getExchange: (baseCurrency, futureCurrency, amount) =>
+  getCurrentExchange: (baseCurrency, futureCurrency, amount) =>
     getResource(
-      `${BASE_URL}?base=${baseCurrency}&symbols=${futureCurrency}&amount=${amount}`
+      `${BASE_URL}/latest?base=${baseCurrency}&symbols=${futureCurrency}&amount=${amount}`
+    ),
+  getHistoricalRate: (baseCurrency, futureCurrency, currentDate, startDate) =>
+    getResource(
+      `${BASE_URL}/timeseries?start_date=${startDate.year}-${startDate.month}-${startDate.day}&end_date=${currentDate.year}-${currentDate.month}-${currentDate.day}&base=${baseCurrency}&symbols=${futureCurrency}`
     ),
 };
 
